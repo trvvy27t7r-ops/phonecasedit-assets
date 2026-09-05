@@ -29,13 +29,13 @@ jobs:
       - name: Install Blender
         run: |
           sudo apt-get update
-          sudo apt-get install --yes blender
+          sudo apt-get install --yes blender python3-numpy
           blender --version
 
       - name: Generate GLB and QA renders
         run: |
           mkdir -p dist qa reports
-          blender --background --factory-startup \
+          blender --background --factory-startup --python-exit-code 1 \
             --python blender/build_phonecase.py -- \
             --input "iphone_17_pro_max (1).glb" \
             --output dist/iphone-17-pro-max-hero.glb \
