@@ -2,11 +2,11 @@
   "uri": "iphone-17-pro-max-hero.glb",
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-05T13:06:16.768Z",
+  "validatedAt": "2026-09-05T13:09:48.386Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
-    "numInfos": 35,
+    "numInfos": 32,
     "numHints": 0,
     "messages": [
       {
@@ -55,6 +55,12 @@
         "code": "UNUSED_OBJECT",
         "message": "This object may be unused.",
         "severity": 2,
+        "pointer": "/meshes/3/primitives/4/attributes/TEXCOORD_0"
+      },
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
         "pointer": "/meshes/4/primitives/0/attributes/TEXCOORD_0"
       },
       {
@@ -62,18 +68,6 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/4/primitives/1/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/4/primitives/2/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/4/primitives/3/attributes/TEXCOORD_0"
       },
       {
         "code": "UNUSED_OBJECT",
@@ -206,18 +200,6 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/26/primitives/2/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/26/primitives/3/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/26/primitives/4/attributes/TEXCOORD_0"
       }
     ],
     "truncated": false
@@ -266,7 +248,7 @@
     "hasSkins": false,
     "hasTextures": true,
     "hasDefaultScene": true,
-    "drawCallCount": 37,
+    "drawCallCount": 34,
     "totalVertexCount": 44971,
     "totalTriangleCount": 37932,
     "maxUVs": 1,
