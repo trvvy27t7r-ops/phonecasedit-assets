@@ -29,7 +29,7 @@ jobs:
       - name: Install Blender
         run: |
           sudo apt-get update
-          sudo apt-get install --yes blender python3-numpy
+          sudo apt-get install --yes blender python3-numpy libegl1 libgl1
           blender --version
 
       - name: Generate GLB and QA renders
