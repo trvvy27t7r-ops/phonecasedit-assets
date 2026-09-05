@@ -23,8 +23,9 @@ BODY_D = 0.00875
 CASE_W = 0.0820
 CASE_H = 0.1674
 CASE_D = 0.0132
-BACK_Y = -CASE_D / 2
-FRONT_Y = CASE_D / 2
+# After source X(depth) -> runtime Y(depth), the inspected +X rear surface is +Y.
+BACK_Y = CASE_D / 2
+FRONT_Y = -CASE_D / 2
 
 
 def parse_args():
@@ -183,7 +184,7 @@ def make_vinyl(root, coll, mat):
     # A real 0.32 mm slab, sitting between the phone and rear shell.
     vinyl = rounded_box(
         "vinyl_back", (BODY_W - 0.0022, 0.00032, BODY_H - 0.0026),
-        (0, -BODY_D / 2 - 0.00022, 0), 0.0025, mat, 6, coll
+        (0, BODY_D / 2 + 0.00022, 0), 0.0025, mat, 6, coll
     )
     vinyl.parent = root
 
@@ -284,7 +285,7 @@ def add_qa_scene(root, qa_coll):
     bpy.context.scene.world = world
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.025, 0.032, 0.045, 1)
-    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.35
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.10
 
     def area(name, loc, energy, size, color):
         data = bpy.data.lights.new(name, "AREA")
@@ -295,9 +296,9 @@ def add_qa_scene(root, qa_coll):
         direction = Vector((0, 0, 0.015)) - obj.location
         obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
 
-    area("QA_key", (-0.22, -0.28, 0.28), 650, 0.18, (1.0, 0.80, 0.65))
-    area("QA_rim", (0.24, 0.05, 0.20), 850, 0.14, (0.35, 0.58, 1.0))
-    area("QA_fill", (0.02, 0.30, 0.10), 500, 0.20, (0.75, 0.88, 1.0))
+    area("QA_key", (-0.22, -0.28, 0.28), 65, 0.18, (1.0, 0.80, 0.65))
+    area("QA_rim", (0.24, 0.05, 0.20), 90, 0.14, (0.35, 0.58, 1.0))
+    area("QA_fill", (0.02, 0.30, 0.10), 45, 0.20, (0.75, 0.88, 1.0))
 
     cam_data = bpy.data.cameras.new("QA_camera")
     cam = bpy.data.objects.new("QA_camera", cam_data)
@@ -377,10 +378,10 @@ def main():
         pass
 
     views = {
-        "01_rear.png": (0.15, -0.30, 0.09),
-        "02_rear_close.png": (-0.10, -0.255, 0.10),
-        "03_front.png": (0.14, 0.31, 0.065),
-        "04_side.png": (0.30, -0.09, 0.055),
+        "01_rear.png": (0.15, 0.30, 0.09),
+        "02_rear_close.png": (-0.10, 0.255, 0.10),
+        "03_front.png": (0.14, -0.31, 0.065),
+        "04_side.png": (0.30, 0.09, 0.055),
     }
     for filename, pos in views.items():
         point_camera(cam, pos, (0, 0, 0.006))
