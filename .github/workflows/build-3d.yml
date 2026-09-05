@@ -1,0 +1,81 @@
+name: Build PhoneCaseEdit 3D asset
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "blender/**"
+      - "scripts/**"
+      - "iphone_17_pro_max (1).glb"
+      - ".github/workflows/build-3d.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phonecasedit-3d-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out assets
+        uses: actions/checkout@v4
+
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes blender
+          blender --version
+
+      - name: Generate GLB and QA renders
+        run: |
+          mkdir -p dist qa reports
+          blender --background --factory-startup \
+            --python blender/build_phonecase.py -- \
+            --input "iphone_17_pro_max (1).glb" \
+            --output dist/iphone-17-pro-max-hero.glb \
+            --qa-dir qa \
+            --report reports/build-report.json
+
+      - name: Install official glTF validator
+        run: npm install --prefix "$RUNNER_TEMP/gltf-validator" gltf-validator
+
+      - name: Validate generated GLB
+        run: |
+          NODE_PATH="$RUNNER_TEMP/gltf-validator/node_modules" \
+            node scripts/validate_glb.cjs \
+            dist/iphone-17-pro-max-hero.glb \
+            reports/gltf-validator-report.json
+
+      - name: Verify deliverables
+        run: |
+          test -s dist/iphone-17-pro-max-hero.glb
+          test "$(find qa -maxdepth 1 -name '*.png' -size +10k | wc -l)" -eq 4
+          test "$(stat -c%s dist/iphone-17-pro-max-hero.glb)" -lt 5242880
+
+      - name: Upload build package
+        uses: actions/upload-artifact@v4
+        with:
+          name: iphone-17-pro-max-hero
+          path: |
+            dist/iphone-17-pro-max-hero.glb
+            qa/*.png
+            reports/*.json
+          retention-days: 30
+
+      - name: Publish validated outputs to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist qa reports
+          if git diff --cached --quiet; then
+            echo "Generated outputs are unchanged."
+          else
+            git commit -m "build: publish validated 3D hero asset"
+            git push
+          fi
