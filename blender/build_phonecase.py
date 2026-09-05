@@ -366,6 +366,17 @@ def main():
         export_cameras=False, export_lights=False,
     )
 
+    # Eevee 4.0 cannot reliably show scene objects behind a transmissive shell
+    # on a headless software renderer. The GLB above already contains physical
+    # KHR_materials_transmission; QA renders switch only the in-memory preview
+    # to alpha so placement and cut-outs remain visually inspectable.
+    for qa_material, qa_alpha in ((clear, 0.16), (edge, 0.24)):
+        qa_bsdf = qa_material.node_tree.nodes.get("Principled BSDF")
+        set_socket(qa_bsdf, ["Transmission Weight", "Transmission"], 0.0)
+        set_socket(qa_bsdf, ["Alpha"], qa_alpha)
+        if hasattr(qa_material, "blend_method"):
+            qa_material.blend_method = "BLEND"
+
     cam, floor = add_qa_scene(root, qa_coll)
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE_NEXT" if bpy.app.version >= (4, 2, 0) else "BLENDER_EEVEE"
