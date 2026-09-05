@@ -285,7 +285,7 @@ def add_qa_scene(root, qa_coll):
     bpy.context.scene.world = world
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.025, 0.032, 0.045, 1)
-    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.10
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.05
 
     def area(name, loc, energy, size, color):
         data = bpy.data.lights.new(name, "AREA")
@@ -296,9 +296,11 @@ def add_qa_scene(root, qa_coll):
         direction = Vector((0, 0, 0.015)) - obj.location
         obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
 
-    area("QA_key", (-0.22, -0.28, 0.28), 65, 0.18, (1.0, 0.80, 0.65))
-    area("QA_rim", (0.24, 0.05, 0.20), 90, 0.14, (0.35, 0.58, 1.0))
-    area("QA_fill", (0.02, 0.30, 0.10), 45, 0.20, (0.75, 0.88, 1.0))
+    # Small, off-axis emitters reveal transparent edges without filling the
+    # rear shell with a camera-facing white reflection.
+    area("QA_key", (-0.16, -0.20, 0.22), 45, 0.070, (1.0, 0.80, 0.65))
+    area("QA_rim", (0.18, 0.18, 0.18), 35, 0.050, (0.35, 0.58, 1.0))
+    area("QA_fill", (-0.18, 0.12, -0.02), 15, 0.060, (0.75, 0.88, 1.0))
 
     cam_data = bpy.data.cameras.new("QA_camera")
     cam = bpy.data.objects.new("QA_camera", cam_data)
