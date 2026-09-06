@@ -404,14 +404,17 @@ def main():
         "03_front.png": (0.14, -0.31, 0.065),
         "04_side.png": (0.30, 0.09, 0.055),
     }
+    qa_back = bpy.data.objects.get("case_clear_back")
+    if qa_back is None:
+        raise RuntimeError("QA expected case_clear_back but it was not found")
     for filename, pos in views.items():
         # The close rear view is intentionally an inspection view: removing
         # only the clear rear plate exposes vinyl placement and camera holes.
-        back.hide_render = filename == "02_rear_close.png"
+        qa_back.hide_render = filename == "02_rear_close.png"
         point_camera(cam, pos, (0, 0, 0.006))
         scene.render.filepath = str(qa_dir / filename)
         bpy.ops.render.render(write_still=True)
-    back.hide_render = False
+    qa_back.hide_render = False
 
     verts, tris = mesh_stats(phone_meshes + [vinyl] + case_parts)
     report = {
