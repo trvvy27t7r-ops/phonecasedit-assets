@@ -278,7 +278,9 @@ def make_case(root, coll, clear_mat, accent_mat, holes):
 
 def add_qa_scene(root, qa_coll):
     floor_mat = material("qa_floor", (0.035, 0.025, 0.022, 1), roughness=0.42)
-    floor = rounded_box("QA_floor", (0.55, 0.012, 0.55), (0, 0.12, -0.105), 0.01, floor_mat, 4, qa_coll)
+    # Horizontal XY floor. The thin dimension must be Z so it never blocks a
+    # front or rear inspection camera.
+    floor = rounded_box("QA_floor", (0.55, 0.55, 0.012), (0, 0.02, -0.105), 0.006, floor_mat, 4, qa_coll)
     floor.hide_render = False
 
     world = bpy.context.scene.world or bpy.data.worlds.new("World")
