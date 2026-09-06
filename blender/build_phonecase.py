@@ -365,17 +365,17 @@ def make_case(root, coll, clear_mat, accent_mat, camera_opening):
 def add_qa_scene(root, qa_coll):
     # Neutral light-grey cyclorama inspired by the supplied product reference.
     # It keeps the dog artwork accurate and produces a soft floating shadow.
-    floor_mat = material("qa_floor", (0.72, 0.72, 0.72, 1), roughness=0.72)
+    floor_mat = material("qa_floor", (0.46, 0.46, 0.46, 1), roughness=0.78)
     # Horizontal XY floor. The thin dimension must be Z so it never blocks a
     # front or rear inspection camera.
-    floor = rounded_box("QA_floor", (0.55, 0.55, 0.012), (0, 0.02, -0.105), 0.006, floor_mat, 4, qa_coll)
+    floor = rounded_box("QA_floor", (2.0, 2.0, 0.012), (0, 0.02, -0.105), 0.006, floor_mat, 4, qa_coll)
     floor.hide_render = False
 
     world = bpy.context.scene.world or bpy.data.worlds.new("World")
     bpy.context.scene.world = world
     world.use_nodes = True
-    world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.78, 0.78, 0.78, 1)
-    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.72
+    world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.58, 0.58, 0.58, 1)
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.24
 
     def area(name, loc, energy, size, color):
         data = bpy.data.lights.new(name, "AREA")
@@ -388,9 +388,9 @@ def add_qa_scene(root, qa_coll):
 
     # Large sources create broad, controlled highlights instead of bright
     # pin-point reflections. All lights are neutral to avoid the former blue rim.
-    area("QA_key", (-0.22, -0.20, 0.24), 18, 0.24, (1.0, 1.0, 1.0))
-    area("QA_rim", (0.22, 0.18, 0.20), 10, 0.20, (1.0, 1.0, 1.0))
-    area("QA_fill", (-0.20, 0.16, -0.01), 7, 0.18, (1.0, 1.0, 1.0))
+    area("QA_key", (-0.22, -0.20, 0.24), 10, 0.28, (1.0, 1.0, 1.0))
+    area("QA_rim", (0.22, 0.18, 0.20), 5, 0.24, (1.0, 1.0, 1.0))
+    area("QA_fill", (-0.20, 0.16, -0.01), 3, 0.22, (1.0, 1.0, 1.0))
 
     cam_data = bpy.data.cameras.new("QA_camera")
     cam = bpy.data.objects.new("QA_camera", cam_data)
@@ -474,8 +474,8 @@ def main():
     # KHR_materials_transmission; QA renders switch only the in-memory preview
     # to alpha so placement and cut-outs remain visually inspectable.
     for qa_material, qa_alpha, qa_color in (
-        (clear, 0.12, (0.42, 0.43, 0.44, 1.0)),
-        (edge, 0.22, (0.20, 0.21, 0.22, 1.0)),
+        (clear, 0.16, (0.10, 0.105, 0.11, 1.0)),
+        (edge, 0.30, (0.025, 0.028, 0.032, 1.0)),
     ):
         qa_bsdf = qa_material.node_tree.nodes.get("Principled BSDF")
         set_socket(qa_bsdf, ["Transmission Weight", "Transmission"], 0.0)
@@ -501,7 +501,7 @@ def main():
         scene.view_settings.look = "AgX - Medium High Contrast"
     except TypeError:
         pass
-    scene.view_settings.exposure = -0.65
+    scene.view_settings.exposure = -1.20
 
     views = {
         "01_rear.png": (0.125, 0.315, 0.070),
