@@ -372,12 +372,18 @@ def main():
     # on a headless software renderer. The GLB above already contains physical
     # KHR_materials_transmission; QA renders switch only the in-memory preview
     # to alpha so placement and cut-outs remain visually inspectable.
-    for qa_material, qa_alpha in ((clear, 0.16), (edge, 0.24)):
+    for qa_material, qa_alpha in ((clear, 0.075), (edge, 0.14)):
         qa_bsdf = qa_material.node_tree.nodes.get("Principled BSDF")
         set_socket(qa_bsdf, ["Transmission Weight", "Transmission"], 0.0)
         set_socket(qa_bsdf, ["Alpha"], qa_alpha)
+        set_socket(qa_bsdf, ["Base Color"], (0.18, 0.38, 0.58, 1.0))
+        qa_material.diffuse_color = (0.18, 0.38, 0.58, qa_alpha)
         if hasattr(qa_material, "blend_method"):
             qa_material.blend_method = "BLEND"
+        if hasattr(qa_material, "surface_render_method"):
+            qa_material.surface_render_method = "DITHERED"
+        if hasattr(qa_material, "use_transparency_overlap"):
+            qa_material.use_transparency_overlap = False
 
     cam, floor = add_qa_scene(root, qa_coll)
     scene = bpy.context.scene
@@ -399,9 +405,13 @@ def main():
         "04_side.png": (0.30, 0.09, 0.055),
     }
     for filename, pos in views.items():
+        # The close rear view is intentionally an inspection view: removing
+        # only the clear rear plate exposes vinyl placement and camera holes.
+        back.hide_render = filename == "02_rear_close.png"
         point_camera(cam, pos, (0, 0, 0.006))
         scene.render.filepath = str(qa_dir / filename)
         bpy.ops.render.render(write_still=True)
+    back.hide_render = False
 
     verts, tris = mesh_stats(phone_meshes + [vinyl] + case_parts)
     report = {
