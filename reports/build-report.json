@@ -5,7 +5,10 @@
   "dimensions_m": {
     "phone_width": 0.078,
     "phone_height": 0.1634,
-    "phone_depth": 0.00875
+    "phone_depth": 0.00875,
+    "case_width": 0.082,
+    "case_height": 0.1674,
+    "case_depth": 0.0124
   },
   "required_nodes": {
     "PCE_Hero_Root": true,
@@ -20,7 +23,13 @@
     "thickness_m": 0.00028,
     "gap_from_shell_m": 6e-05,
     "uv0": true,
-    "camera_opening": "single_rounded_rectangle"
+    "outer_corner_radius_m": 0.0095,
+    "camera_opening": {
+      "shape": "iphone_17_pro_max_horizontal_plateau",
+      "width_m": 0.072,
+      "height_m": 0.042,
+      "corner_radius_m": 0.007
+    }
   },
   "case": {
     "solid_back": true,
@@ -30,9 +39,9 @@
     "bottom_port_opening": true,
     "camera_module_openings": 1
   },
-  "vertices": 2681,
-  "triangles": 5343,
+  "vertices": 1080,
+  "triangles": 2020,
   "triangle_budget": 50000,
   "triangle_budget_pass": true,
-  "output_bytes": 592440
+  "output_bytes": 485904
 }
