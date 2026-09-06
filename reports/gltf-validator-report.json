@@ -2,11 +2,11 @@
   "uri": "iphone-17-pro-max-hero.glb",
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-06T15:34:38.395Z",
+  "validatedAt": "2026-09-06T15:38:22.826Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
-    "numInfos": 8,
+    "numInfos": 9,
     "numHints": 0,
     "messages": [
       {
@@ -25,6 +25,12 @@
         "code": "UNUSED_OBJECT",
         "message": "This object may be unused.",
         "severity": 2,
+        "pointer": "/meshes/1/primitives/1/attributes/TEXCOORD_0"
+      },
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
         "pointer": "/meshes/2/primitives/0/attributes/TEXCOORD_0"
       },
       {
@@ -37,12 +43,6 @@
         "code": "UNUSED_OBJECT",
         "message": "This object may be unused.",
         "severity": 2,
-        "pointer": "/meshes/2/primitives/2/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
         "pointer": "/meshes/3/primitives/0/attributes/TEXCOORD_0"
       },
       {
@@ -50,6 +50,12 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/4/primitives/0/attributes/TEXCOORD_0"
+      },
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/5/primitives/1/attributes/TEXCOORD_0"
       },
       {
         "code": "IMAGE_NPOT_DIMENSIONS",
@@ -73,7 +79,7 @@
         "pointer": "/buffers/0",
         "mimeType": "application/gltf-buffer",
         "storage": "glb",
-        "byteLength": 542840
+        "byteLength": 582772
       },
       {
         "pointer": "/images/0",
@@ -88,13 +94,13 @@
       }
     ],
     "animationCount": 0,
-    "materialCount": 3,
+    "materialCount": 4,
     "hasMorphTargets": false,
     "hasSkins": false,
     "hasTextures": true,
     "hasDefaultScene": true,
-    "drawCallCount": 8,
-    "totalVertexCount": 3441,
+    "drawCallCount": 9,
+    "totalVertexCount": 4689,
     "totalTriangleCount": 5343,
     "maxUVs": 1,
     "maxInfluences": 0,
