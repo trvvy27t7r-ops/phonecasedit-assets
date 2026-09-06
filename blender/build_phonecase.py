@@ -1,8 +1,8 @@
-"""Build the PhoneCaseEdit hero GLB and four QA renders in headless Blender.
+"""Build an empty clear case with an exterior printed vinyl.
 
-The source phone remains untouched.  The imported model is normalised to real
-world dimensions and placed inside script-generated vinyl and clear-case parts.
-This script intentionally uses only Blender's bundled Python modules.
+The source phone is imported only as a dimensional template. It is hidden and
+excluded from the final GLB; the exported product contains the hollow clear case
+and a separate, physically thin vinyl applied to its outer rear surface.
 """
 
 import argparse
@@ -35,6 +35,7 @@ def parse_args():
     p.add_argument("--output", required=True)
     p.add_argument("--qa-dir", required=True)
     p.add_argument("--report", required=True)
+    p.add_argument("--vinyl-texture", required=True)
     return p.parse_args(argv)
 
 
@@ -88,6 +89,24 @@ def material(name, color, metallic=0.0, roughness=0.35, transmission=0.0, alpha=
         if hasattr(m, "use_screen_refraction"):
             m.use_screen_refraction = True
         m.diffuse_color = (*color[:3], alpha)
+    return m
+
+
+def vinyl_material(path):
+    """Opaque printed-vinyl PBR material with the supplied artwork embedded."""
+    m = material("PCE_Vinyl_Dog_Print", (1, 1, 1, 1), roughness=0.30)
+    nodes = m.node_tree.nodes
+    links = m.node_tree.links
+    bsdf = nodes.get("Principled BSDF")
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.pack()
+    tex = nodes.new("ShaderNodeTexImage")
+    tex.name = "PCE_Dog_Artwork"
+    tex.image = image
+    tex.interpolation = "Linear"
+    links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    set_socket(bsdf, ["Coat Weight", "Clearcoat"], 0.22)
+    set_socket(bsdf, ["Coat Roughness", "Clearcoat Roughness"], 0.18)
     return m
 
 
@@ -193,39 +212,41 @@ def import_and_normalise_phone(path, root, coll):
     return phone, imported_meshes
 
 
-def make_vinyl(root, coll, mat):
-    # A real 0.32 mm slab, sitting between the phone and rear shell.
+def make_vinyl(root, coll, mat, shell_back_y):
+    # A real 0.28 mm printed slab applied on the OUTSIDE of the rear shell.
+    thickness = 0.00028
+    gap = 0.00006
+    width = CASE_W - 0.0042
+    height = CASE_H - 0.0040
     vinyl = rounded_box(
-        "vinyl_back", (BODY_W - 0.0022, 0.00032, BODY_H - 0.0026),
-        (0, BODY_D / 2 + 0.00022, 0), 0.0025, mat, 6, coll
+        "vinyl_back", (width, thickness, height),
+        (0, shell_back_y + gap + thickness / 2, 0), 0.0030, mat, 6, coll
     )
     vinyl.parent = root
 
-    # Three camera lenses plus flash and LiDAR; approximate centres match the
-    # inspected source and can be tuned from QA renders without hand modelling.
-    holes = [
-        (0.0228, 0.0692, 0.0089),
-        (0.0043, 0.0588, 0.0089),
-        (0.0240, 0.0516, 0.0089),
-        (-0.0065, 0.0580, 0.0034),
-        (-0.0040, 0.0380, 0.0028),
-    ]
-    for x, z, r in holes:
-        cut = cylinder("vinyl_cut", r, 0.01, (x, vinyl.location.y, z), vertices=32)
-        boolean_difference(vinyl, cut)
+    # Match the supplied physical product: one rounded rectangular opening
+    # for the complete camera module, not artificial individual lens holes.
+    camera_opening = {"centre": (0.0130, 0.0540), "size": (0.0490, 0.0580), "radius": 0.0065}
+    cx, cz = camera_opening["centre"]
+    cw, ch = camera_opening["size"]
+    cut = rounded_box("vinyl_camera_module_cut", (cw, 0.012, ch),
+                      (cx, vinyl.location.y, cz), camera_opening["radius"], None, 8)
+    boolean_difference(vinyl, cut)
 
-    # Deterministic planar UV0 for dynamic CanvasTexture use.
+    # Deterministic planar UV0. Flip U so a rear camera displays the supplied
+    # artwork with its original left/right orientation.
     uv = vinyl.data.uv_layers.get("UVMap") or vinyl.data.uv_layers.new(name="UVMap")
-    half_w = (BODY_W - 0.0022) / 2
-    half_h = (BODY_H - 0.0026) / 2
+    half_w = width / 2
+    half_h = height / 2
     for poly in vinyl.data.polygons:
         for li in poly.loop_indices:
             co = vinyl.data.vertices[vinyl.data.loops[li].vertex_index].co
-            uv.data[li].uv = ((co.x + half_w) / (2 * half_w), (co.z + half_h) / (2 * half_h))
-    return vinyl, holes
+            uv.data[li].uv = (1.0 - (co.x + half_w) / (2 * half_w),
+                              (co.z + half_h) / (2 * half_h))
+    return vinyl, camera_opening, thickness, gap
 
 
-def make_case(root, coll, clear_mat, accent_mat, holes):
+def make_case(root, coll, clear_mat, accent_mat, camera_opening):
     parts = []
     rail = 0.00165
     back_thickness = 0.00125
@@ -245,10 +266,13 @@ def make_case(root, coll, clear_mat, accent_mat, holes):
                          0.0041, None, 8)
     boolean_difference(shell, cavity)
 
-    # Individual rear apertures preserve the camera/flash/LiDAR silhouette.
-    for x, z, r in holes:
-        cut = cylinder("case_camera_cut", r + 0.00065, 0.025, (x, shell_back_y, z), vertices=32)
-        boolean_difference(shell, cut)
+    # One rounded opening for the complete camera module, matching the real
+    # printed vinyl supplied by the user.
+    cx, cz = camera_opening["centre"]
+    cw, ch = camera_opening["size"]
+    cut = rounded_box("case_camera_module_cut", (cw + 0.0012, 0.028, ch + 0.0012),
+                      (cx, shell_back_y, cz), camera_opening["radius"] + 0.0006, None, 8)
+    boolean_difference(shell, cut)
 
     # USB-C/speaker opening through the lower wall.
     port = rounded_box("case_bottom_port_cut", (0.024, 0.020, 0.0045),
@@ -266,12 +290,14 @@ def make_case(root, coll, clear_mat, accent_mat, holes):
                     (CASE_W / 2 + 0.00035, shell_y, 0.026), 0.00055, accent_mat, 4, coll),
     ]
 
-    # Raised camera protector around the complete camera field.
-    bumper = rounded_box("case_camera_guard", (0.0435, 0.0020, 0.0505),
-                          (0.0130, shell_back_y + 0.00075, 0.054), 0.0060, clear_mat, 8, coll)
-    for x, z, r in holes:
-        cut = cylinder("guard_cut", r + 0.00115, 0.02, (x, bumper.location.y, z), vertices=32)
-        boolean_difference(bumper, cut)
+    # Raised clear protector as a physical frame around the module opening.
+    bumper = rounded_box("case_camera_guard", (cw + 0.0048, 0.0020, ch + 0.0048),
+                          (cx, shell_back_y + 0.00075, cz),
+                          camera_opening["radius"] + 0.0024, clear_mat, 8, coll)
+    guard_cut = rounded_box("case_camera_guard_inner_cut", (cw + 0.0008, 0.010, ch + 0.0008),
+                            (cx, bumper.location.y, cz),
+                            camera_opening["radius"] + 0.0004, None, 8)
+    boolean_difference(bumper, guard_cut)
     parts.append(bumper)
 
     case_root = bpy.data.objects.new("case_clear", None)
@@ -355,16 +381,26 @@ def main():
 
     clear = material("PCE_Clear_TPU", (0.92, 0.97, 1.0, 1), roughness=0.075, transmission=0.96, alpha=0.30)
     edge = material("PCE_Clear_Button", (0.80, 0.91, 1.0, 1), roughness=0.12, transmission=0.82, alpha=0.42)
-    vinyl_mat = material("PCE_Vinyl_QA_Blue", (0.14, 0.42, 0.82, 1), roughness=0.31)
+    vinyl_mat = vinyl_material(Path(args.vinyl_texture))
 
     phone, phone_meshes = import_and_normalise_phone(Path(args.input), root, asset_coll)
-    vinyl, holes = make_vinyl(root, asset_coll, vinyl_mat)
-    case, case_parts = make_case(root, asset_coll, clear, edge, holes)
+    # The source phone is a dimensional template only. Remove it from the scene
+    # completely after normalisation so it cannot leak into export or QA.
+    template_objects = [phone] + list(phone.children_recursive)
+    for obj in reversed(template_objects):
+        if obj.name in bpy.data.objects:
+            bpy.data.objects.remove(obj, do_unlink=True)
+    camera_opening = {"centre": (0.0130, 0.0540), "size": (0.0490, 0.0580), "radius": 0.0065}
+    case, case_parts = make_case(root, asset_coll, clear, edge, camera_opening)
+    shell_back_y = 0.0003 + 0.0114 / 2
+    vinyl, camera_opening, vinyl_thickness, vinyl_gap = make_vinyl(
+        root, asset_coll, vinyl_mat, shell_back_y
+    )
     bpy.context.view_layer.update()
 
     # Export only the product hierarchy, excluding QA lights/camera/floor.
     bpy.ops.object.select_all(action="DESELECT")
-    export_objects = [root, phone, vinyl, case] + phone_meshes + case_parts
+    export_objects = [root, vinyl, case] + case_parts
     for obj in export_objects:
         obj.select_set(True)
     bpy.context.view_layer.objects.active = root
@@ -415,23 +451,34 @@ def main():
     if qa_shell is None:
         raise RuntimeError("QA expected case_clear_shell but it was not found")
     for filename, pos in views.items():
-        # The close rear view is intentionally an inspection view: removing
-        # only the clear rear plate exposes vinyl placement and camera holes.
-        qa_shell.hide_render = filename == "02_rear_close.png"
+        # Keep the complete hollow case visible in every QA view. The rear
+        # close-up verifies that the print is outside the transparent shell.
+        qa_shell.hide_render = False
         point_camera(cam, pos, (0, 0, 0.006))
         scene.render.filepath = str(qa_dir / filename)
         bpy.ops.render.render(write_still=True)
     qa_shell.hide_render = False
 
-    verts, tris = mesh_stats(phone_meshes + [vinyl] + case_parts)
+    verts, tris = mesh_stats([vinyl] + case_parts)
     report = {
         "generator": "PhoneCaseEdit scripted Blender pipeline",
         "source": Path(args.input).name,
         "output": out.name,
         "dimensions_m": {"phone_width": BODY_W, "phone_height": BODY_H, "phone_depth": BODY_D},
-        "required_nodes": {"PCE_Hero_Root": True, "phone_body": True, "vinyl_back": True, "case_clear": True},
-        "vinyl": {"thickness_m": 0.00032, "uv0": bool(vinyl.data.uv_layers)},
-        "case": {"solid_back": True, "front_lip": True, "button_covers": 3, "bottom_port_opening": True, "camera_holes": len(holes)},
+        "required_nodes": {"PCE_Hero_Root": True, "vinyl_back": True, "case_clear": True},
+        "phone_included": False,
+        "interior_empty": True,
+        "vinyl": {
+            "placement": "exterior_rear",
+            "texture": Path(args.vinyl_texture).name,
+            "thickness_m": vinyl_thickness,
+            "gap_from_shell_m": vinyl_gap,
+            "uv0": bool(vinyl.data.uv_layers),
+            "camera_opening": "single_rounded_rectangle",
+        },
+        "case": {"solid_back": True, "hollow_interior": True, "front_lip": True,
+                 "button_covers": 3, "bottom_port_opening": True,
+                 "camera_module_openings": 1},
         "vertices": verts,
         "triangles": tris,
         "triangle_budget": 50000,
