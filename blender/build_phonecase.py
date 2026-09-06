@@ -204,11 +204,11 @@ def make_vinyl(root, coll, mat):
     # Three camera lenses plus flash and LiDAR; approximate centres match the
     # inspected source and can be tuned from QA renders without hand modelling.
     holes = [
-        (0.0265, 0.0590, 0.0089),
-        (0.0105, 0.0445, 0.0089),
-        (0.0265, 0.0315, 0.0089),
-        (0.0055, 0.0548, 0.0034),
-        (0.0235, 0.0390, 0.0028),
+        (0.0265, 0.0660, 0.0089),
+        (0.0080, 0.0520, 0.0089),
+        (0.0260, 0.0440, 0.0089),
+        (-0.0065, 0.0580, 0.0034),
+        (-0.0040, 0.0380, 0.0028),
     ]
     for x, z, r in holes:
         cut = cylinder("vinyl_cut", r, 0.01, (x, vinyl.location.y, z), vertices=32)
