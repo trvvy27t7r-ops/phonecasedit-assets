@@ -2,11 +2,11 @@
   "uri": "iphone-17-pro-max-hero.glb",
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-06T14:49:47.453Z",
+  "validatedAt": "2026-09-06T14:53:31.268Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
-    "numInfos": 22,
+    "numInfos": 24,
     "numHints": 0,
     "messages": [
       {
@@ -56,6 +56,12 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/2/primitives/4/attributes/TEXCOORD_0"
+      },
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/2/primitives/5/attributes/TEXCOORD_0"
       },
       {
         "code": "UNUSED_OBJECT",
@@ -140,6 +146,12 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/17/primitives/1/attributes/TEXCOORD_0"
+      },
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/17/primitives/2/attributes/TEXCOORD_0"
       }
     ],
     "truncated": false
@@ -157,7 +169,7 @@
         "pointer": "/buffers/0",
         "mimeType": "application/gltf-buffer",
         "storage": "glb",
-        "byteLength": 1896312
+        "byteLength": 1903524
       },
       {
         "pointer": "/images/0",
@@ -188,9 +200,9 @@
     "hasSkins": false,
     "hasTextures": true,
     "hasDefaultScene": true,
-    "drawCallCount": 24,
-    "totalVertexCount": 43346,
-    "totalTriangleCount": 35564,
+    "drawCallCount": 26,
+    "totalVertexCount": 43546,
+    "totalTriangleCount": 35700,
     "maxUVs": 1,
     "maxInfluences": 0,
     "maxAttributes": 3
