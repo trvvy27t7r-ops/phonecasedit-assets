@@ -177,6 +177,19 @@ def import_and_normalise_phone(path, root, coll):
     for obj in imported_meshes:
         obj.name = "phone_part_" + obj.name
         obj.data.name = obj.name + "_mesh"
+        # The source body is orange. Keep the textured screen and optical
+        # elements, but neutralise structural metal/back materials so a custom
+        # vinyl remains the visual focus.
+        for source_mat in obj.data.materials:
+            if source_mat is None or not source_mat.use_nodes:
+                continue
+            mat_name = source_mat.name.lower()
+            if any(key in mat_name for key in ("basecolor", "metalframe", "backpanel", "metal.001")):
+                source_bsdf = source_mat.node_tree.nodes.get("Principled BSDF")
+                if source_bsdf:
+                    set_socket(source_bsdf, ["Base Color"], (0.055, 0.065, 0.078, 1.0))
+                    set_socket(source_bsdf, ["Metallic"], 0.62)
+                    set_socket(source_bsdf, ["Roughness"], 0.30)
     return phone, imported_meshes
 
 
@@ -191,11 +204,11 @@ def make_vinyl(root, coll, mat):
     # Three camera lenses plus flash and LiDAR; approximate centres match the
     # inspected source and can be tuned from QA renders without hand modelling.
     holes = [
-        (-0.0230, 0.0570, 0.0089),
-        (-0.0230, 0.0375, 0.0089),
-        (-0.0060, 0.0472, 0.0089),
-        (-0.0065, 0.0648, 0.0034),
-        (-0.0060, 0.0310, 0.0028),
+        (0.0265, 0.0590, 0.0089),
+        (0.0105, 0.0445, 0.0089),
+        (0.0265, 0.0315, 0.0089),
+        (0.0055, 0.0548, 0.0034),
+        (0.0235, 0.0390, 0.0028),
     ]
     for x, z, r in holes:
         cut = cylinder("vinyl_cut", r, 0.01, (x, vinyl.location.y, z), vertices=32)
