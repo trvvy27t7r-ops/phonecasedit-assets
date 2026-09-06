@@ -78,8 +78,10 @@ def material(name, color, metallic=0.0, roughness=0.35, transmission=0.0, alpha=
     set_socket(bsdf, ["Roughness"], roughness)
     set_socket(bsdf, ["IOR"], 1.47)
     set_socket(bsdf, ["Transmission Weight", "Transmission"], transmission)
-    set_socket(bsdf, ["Coat Weight", "Clearcoat"], 1.0 if transmission else 0.15)
-    set_socket(bsdf, ["Coat Roughness", "Clearcoat Roughness"], 0.05)
+    # A restrained clear coat keeps the TPU legible without the wet/plastic
+    # glare produced by a full-strength clearcoat under studio lights.
+    set_socket(bsdf, ["Coat Weight", "Clearcoat"], 0.32 if transmission else 0.10)
+    set_socket(bsdf, ["Coat Roughness", "Clearcoat Roughness"], 0.24 if transmission else 0.20)
     set_socket(bsdf, ["Alpha"], alpha)
     if transmission:
         if hasattr(m, "surface_render_method"):
@@ -94,7 +96,7 @@ def material(name, color, metallic=0.0, roughness=0.35, transmission=0.0, alpha=
 
 def vinyl_material(path):
     """Opaque printed-vinyl PBR material with the supplied artwork embedded."""
-    m = material("PCE_Vinyl_Dog_Print", (1, 1, 1, 1), roughness=0.30)
+    m = material("PCE_Vinyl_Dog_Print", (1, 1, 1, 1), roughness=0.58)
     nodes = m.node_tree.nodes
     links = m.node_tree.links
     bsdf = nodes.get("Principled BSDF")
@@ -105,8 +107,8 @@ def vinyl_material(path):
     tex.image = image
     tex.interpolation = "Linear"
     links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
-    set_socket(bsdf, ["Coat Weight", "Clearcoat"], 0.22)
-    set_socket(bsdf, ["Coat Roughness", "Clearcoat Roughness"], 0.18)
+    set_socket(bsdf, ["Coat Weight", "Clearcoat"], 0.06)
+    set_socket(bsdf, ["Coat Roughness", "Clearcoat Roughness"], 0.42)
     return m
 
 
@@ -361,7 +363,9 @@ def make_case(root, coll, clear_mat, accent_mat, camera_opening):
 
 
 def add_qa_scene(root, qa_coll):
-    floor_mat = material("qa_floor", (0.035, 0.025, 0.022, 1), roughness=0.42)
+    # Neutral light-grey cyclorama inspired by the supplied product reference.
+    # It keeps the dog artwork accurate and produces a soft floating shadow.
+    floor_mat = material("qa_floor", (0.72, 0.72, 0.72, 1), roughness=0.72)
     # Horizontal XY floor. The thin dimension must be Z so it never blocks a
     # front or rear inspection camera.
     floor = rounded_box("QA_floor", (0.55, 0.55, 0.012), (0, 0.02, -0.105), 0.006, floor_mat, 4, qa_coll)
@@ -370,8 +374,8 @@ def add_qa_scene(root, qa_coll):
     world = bpy.context.scene.world or bpy.data.worlds.new("World")
     bpy.context.scene.world = world
     world.use_nodes = True
-    world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.025, 0.032, 0.045, 1)
-    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.05
+    world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.78, 0.78, 0.78, 1)
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.72
 
     def area(name, loc, energy, size, color):
         data = bpy.data.lights.new(name, "AREA")
@@ -382,11 +386,11 @@ def add_qa_scene(root, qa_coll):
         direction = Vector((0, 0, 0.015)) - obj.location
         obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
 
-    # Small, off-axis emitters reveal transparent edges without filling the
-    # rear shell with a camera-facing white reflection.
-    area("QA_key", (-0.16, -0.20, 0.22), 12, 0.070, (1.0, 0.97, 0.94))
-    area("QA_rim", (0.18, 0.18, 0.18), 10, 0.050, (0.94, 0.97, 1.0))
-    area("QA_fill", (-0.18, 0.12, -0.02), 5, 0.060, (1.0, 1.0, 1.0))
+    # Large sources create broad, controlled highlights instead of bright
+    # pin-point reflections. All lights are neutral to avoid the former blue rim.
+    area("QA_key", (-0.22, -0.20, 0.24), 18, 0.24, (1.0, 1.0, 1.0))
+    area("QA_rim", (0.22, 0.18, 0.20), 10, 0.20, (1.0, 1.0, 1.0))
+    area("QA_fill", (-0.20, 0.16, -0.01), 7, 0.18, (1.0, 1.0, 1.0))
 
     cam_data = bpy.data.cameras.new("QA_camera")
     cam = bpy.data.objects.new("QA_camera", cam_data)
@@ -431,8 +435,8 @@ def main():
     root = bpy.data.objects.new("PCE_Hero_Root", None)
     asset_coll.objects.link(root)
 
-    clear = material("PCE_Clear_TPU", (1.0, 1.0, 1.0, 1), roughness=0.075, transmission=0.97, alpha=0.18)
-    edge = material("PCE_Clear_Button", (1.0, 1.0, 1.0, 1), roughness=0.11, transmission=0.90, alpha=0.24)
+    clear = material("PCE_Clear_TPU", (1.0, 1.0, 1.0, 1), roughness=0.18, transmission=0.93, alpha=0.16)
+    edge = material("PCE_Clear_Button", (0.92, 0.92, 0.92, 1), roughness=0.22, transmission=0.88, alpha=0.22)
     vinyl_mat = vinyl_material(Path(args.vinyl_texture))
     vinyl_backing = material("PCE_Vinyl_Adhesive_Back", (0.94, 0.94, 0.91, 1), roughness=0.48)
 
@@ -469,12 +473,15 @@ def main():
     # on a headless software renderer. The GLB above already contains physical
     # KHR_materials_transmission; QA renders switch only the in-memory preview
     # to alpha so placement and cut-outs remain visually inspectable.
-    for qa_material, qa_alpha in ((clear, 0.10), (edge, 0.16)):
+    for qa_material, qa_alpha, qa_color in (
+        (clear, 0.12, (0.42, 0.43, 0.44, 1.0)),
+        (edge, 0.22, (0.20, 0.21, 0.22, 1.0)),
+    ):
         qa_bsdf = qa_material.node_tree.nodes.get("Principled BSDF")
         set_socket(qa_bsdf, ["Transmission Weight", "Transmission"], 0.0)
         set_socket(qa_bsdf, ["Alpha"], qa_alpha)
-        set_socket(qa_bsdf, ["Base Color"], (1.0, 1.0, 1.0, 1.0))
-        qa_material.diffuse_color = (1.0, 1.0, 1.0, qa_alpha)
+        set_socket(qa_bsdf, ["Base Color"], qa_color)
+        qa_material.diffuse_color = (*qa_color[:3], qa_alpha)
         if hasattr(qa_material, "blend_method"):
             qa_material.blend_method = "BLEND"
         if hasattr(qa_material, "surface_render_method"):
@@ -494,11 +501,11 @@ def main():
         scene.view_settings.look = "AgX - Medium High Contrast"
     except TypeError:
         pass
-    scene.view_settings.exposure = -1.5
+    scene.view_settings.exposure = -0.65
 
     views = {
-        "01_rear.png": (0.15, 0.30, 0.09),
-        "02_rear_close.png": (-0.10, 0.255, 0.10),
+        "01_rear.png": (0.125, 0.315, 0.070),
+        "02_rear_close.png": (-0.095, 0.270, 0.085),
         "03_front.png": (0.14, -0.31, 0.065),
         "04_side.png": (0.30, 0.09, 0.055),
     }
