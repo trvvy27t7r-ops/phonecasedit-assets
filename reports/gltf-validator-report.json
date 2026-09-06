@@ -2,11 +2,11 @@
   "uri": "iphone-17-pro-max-hero.glb",
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-06T14:28:54.758Z",
+  "validatedAt": "2026-09-06T14:35:47.957Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
-    "numInfos": 33,
+    "numInfos": 32,
     "numHints": 0,
     "messages": [
       {
@@ -68,12 +68,6 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/4/primitives/3/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/4/primitives/4/attributes/TEXCOORD_0"
       },
       {
         "code": "UNUSED_OBJECT",
@@ -254,7 +248,7 @@
     "hasSkins": false,
     "hasTextures": true,
     "hasDefaultScene": true,
-    "drawCallCount": 35,
+    "drawCallCount": 34,
     "totalVertexCount": 44971,
     "totalTriangleCount": 37932,
     "maxUVs": 1,
