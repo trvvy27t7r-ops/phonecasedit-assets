@@ -215,54 +215,47 @@ def make_vinyl(root, coll, mat):
 def make_case(root, coll, clear_mat, accent_mat, holes):
     parts = []
     rail = 0.00165
-    corner = 0.0045
+    back_thickness = 0.00125
+    shell_depth = 0.0114
+    shell_y = 0.0003
+    shell_back_y = shell_y + shell_depth / 2
 
-    # Solid transparent rear shell: not a plane and not an empty box.
-    back = rounded_box("case_clear_back", (CASE_W, 0.00125, CASE_H),
-                       (0, BACK_Y + 0.000625, 0), corner, clear_mat, 6, coll)
+    # One continuous rounded shell. Subtracting an open-front inner cavity
+    # leaves a physical rear slab, joined side walls and a continuous lip.
+    shell = rounded_box("case_clear_shell", (CASE_W, shell_depth, CASE_H),
+                        (0, shell_y, 0), 0.0053, clear_mat, 8, coll)
+    cavity_depth = shell_depth - back_thickness + 0.0020
+    cavity_max_y = shell_back_y - back_thickness
+    cavity_min_y = cavity_max_y - cavity_depth
+    cavity = rounded_box("case_inner_cavity", (CASE_W - 2 * rail, cavity_depth, CASE_H - 2 * rail),
+                         (0, (cavity_min_y + cavity_max_y) / 2, 0),
+                         0.0041, None, 8)
+    boolean_difference(shell, cavity)
+
+    # Individual rear apertures preserve the camera/flash/LiDAR silhouette.
     for x, z, r in holes:
-        cut = cylinder("case_camera_cut", r + 0.00065, 0.02, (x, BACK_Y, z), vertices=32)
-        boolean_difference(back, cut)
-    parts.append(back)
+        cut = cylinder("case_camera_cut", r + 0.00065, 0.025, (x, shell_back_y, z), vertices=32)
+        boolean_difference(shell, cut)
 
-    # Four protective rails and a raised front lip.
-    parts += [
-        rounded_box("case_left_rail", (rail, CASE_D, CASE_H - 0.006),
-                    (-CASE_W / 2 + rail / 2, 0, 0), 0.00075, clear_mat, 5, coll),
-        rounded_box("case_right_rail", (rail, CASE_D, CASE_H - 0.006),
-                    (CASE_W / 2 - rail / 2, 0, 0), 0.00075, clear_mat, 5, coll),
-        rounded_box("case_top_rail", (CASE_W - 0.006, CASE_D, rail),
-                    (0, 0, CASE_H / 2 - rail / 2), 0.00075, clear_mat, 5, coll),
-        rounded_box("case_bottom_left", (0.027, CASE_D, rail),
-                    (-0.026, 0, -CASE_H / 2 + rail / 2), 0.00075, clear_mat, 5, coll),
-        rounded_box("case_bottom_right", (0.027, CASE_D, rail),
-                    (0.026, 0, -CASE_H / 2 + rail / 2), 0.00075, clear_mat, 5, coll),
-    ]
-    lip_y = FRONT_Y - 0.00035
-    parts += [
-        rounded_box("case_front_lip_left", (0.0014, 0.0013, CASE_H - 0.005),
-                    (-CASE_W / 2 + 0.0007, lip_y, 0), 0.00055, clear_mat, 4, coll),
-        rounded_box("case_front_lip_right", (0.0014, 0.0013, CASE_H - 0.005),
-                    (CASE_W / 2 - 0.0007, lip_y, 0), 0.00055, clear_mat, 4, coll),
-        rounded_box("case_front_lip_top", (CASE_W - 0.005, 0.0013, 0.0014),
-                    (0, lip_y, CASE_H / 2 - 0.0007), 0.00055, clear_mat, 4, coll),
-        rounded_box("case_front_lip_bottom", (CASE_W - 0.005, 0.0013, 0.0014),
-                    (0, lip_y, -CASE_H / 2 + 0.0007), 0.00055, clear_mat, 4, coll),
-    ]
+    # USB-C/speaker opening through the lower wall.
+    port = rounded_box("case_bottom_port_cut", (0.024, 0.020, 0.0045),
+                       (0, shell_y, -CASE_H / 2 + 0.0012), 0.0012, None, 5)
+    boolean_difference(shell, port)
+    parts.append(shell)
 
     # Separate tactile covers. Bottom gap is the USB-C/speaker opening.
     parts += [
         rounded_box("case_action_button", (0.0011, 0.0055, 0.010),
-                    (-CASE_W / 2 - 0.00035, 0.0005, 0.044), 0.00055, accent_mat, 4, coll),
+                    (-CASE_W / 2 - 0.00035, shell_y, 0.044), 0.00055, accent_mat, 4, coll),
         rounded_box("case_volume_button", (0.0011, 0.0055, 0.024),
-                    (-CASE_W / 2 - 0.00035, 0.0005, 0.016), 0.00055, accent_mat, 4, coll),
+                    (-CASE_W / 2 - 0.00035, shell_y, 0.016), 0.00055, accent_mat, 4, coll),
         rounded_box("case_power_button", (0.0011, 0.0055, 0.027),
-                    (CASE_W / 2 + 0.00035, 0.0005, 0.026), 0.00055, accent_mat, 4, coll),
+                    (CASE_W / 2 + 0.00035, shell_y, 0.026), 0.00055, accent_mat, 4, coll),
     ]
 
     # Raised camera protector around the complete camera field.
     bumper = rounded_box("case_camera_guard", (0.0435, 0.0020, 0.0505),
-                          (-0.0145, BACK_Y - 0.00055, 0.048), 0.0060, clear_mat, 8, coll)
+                          (-0.0145, shell_back_y + 0.00075, 0.048), 0.0060, clear_mat, 8, coll)
     for x, z, r in holes:
         cut = cylinder("guard_cut", r + 0.00115, 0.02, (x, bumper.location.y, z), vertices=32)
         boolean_difference(bumper, cut)
@@ -300,9 +293,9 @@ def add_qa_scene(root, qa_coll):
 
     # Small, off-axis emitters reveal transparent edges without filling the
     # rear shell with a camera-facing white reflection.
-    area("QA_key", (-0.16, -0.20, 0.22), 45, 0.070, (1.0, 0.80, 0.65))
-    area("QA_rim", (0.18, 0.18, 0.18), 35, 0.050, (0.35, 0.58, 1.0))
-    area("QA_fill", (-0.18, 0.12, -0.02), 15, 0.060, (0.75, 0.88, 1.0))
+    area("QA_key", (-0.16, -0.20, 0.22), 12, 0.070, (1.0, 0.80, 0.65))
+    area("QA_rim", (0.18, 0.18, 0.18), 10, 0.050, (0.35, 0.58, 1.0))
+    area("QA_fill", (-0.18, 0.12, -0.02), 5, 0.060, (0.75, 0.88, 1.0))
 
     cam_data = bpy.data.cameras.new("QA_camera")
     cam = bpy.data.objects.new("QA_camera", cam_data)
@@ -397,6 +390,7 @@ def main():
         scene.view_settings.look = "AgX - Medium High Contrast"
     except TypeError:
         pass
+    scene.view_settings.exposure = -1.5
 
     views = {
         "01_rear.png": (0.15, 0.30, 0.09),
@@ -404,17 +398,17 @@ def main():
         "03_front.png": (0.14, -0.31, 0.065),
         "04_side.png": (0.30, 0.09, 0.055),
     }
-    qa_back = bpy.data.objects.get("case_clear_back")
-    if qa_back is None:
-        raise RuntimeError("QA expected case_clear_back but it was not found")
+    qa_shell = bpy.data.objects.get("case_clear_shell")
+    if qa_shell is None:
+        raise RuntimeError("QA expected case_clear_shell but it was not found")
     for filename, pos in views.items():
         # The close rear view is intentionally an inspection view: removing
         # only the clear rear plate exposes vinyl placement and camera holes.
-        qa_back.hide_render = filename == "02_rear_close.png"
+        qa_shell.hide_render = filename == "02_rear_close.png"
         point_camera(cam, pos, (0, 0, 0.006))
         scene.render.filepath = str(qa_dir / filename)
         bpy.ops.render.render(write_still=True)
-    qa_back.hide_render = False
+    qa_shell.hide_render = False
 
     verts, tris = mesh_stats(phone_meshes + [vinyl] + case_parts)
     report = {
