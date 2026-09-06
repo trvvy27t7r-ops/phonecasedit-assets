@@ -2,7 +2,7 @@
   "uri": "iphone-17-pro-max-hero.glb",
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-06T15:54:56.827Z",
+  "validatedAt": "2026-09-06T15:58:54.753Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
@@ -81,7 +81,7 @@
     "hasSkins": false,
     "hasTextures": true,
     "hasDefaultScene": true,
-    "drawCallCount": 7,
+    "drawCallCount": 8,
     "totalVertexCount": 2184,
     "totalTriangleCount": 2020,
     "maxUVs": 1,
