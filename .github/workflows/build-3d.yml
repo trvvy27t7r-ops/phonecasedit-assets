@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "blender/**"
+      - "assets/**"
       - "scripts/**"
       - "iphone_17_pro_max (1).glb"
       - ".github/workflows/build-3d.yml"
@@ -35,12 +36,14 @@ jobs:
       - name: Generate GLB and QA renders
         run: |
           mkdir -p dist qa reports
+          base64 --decode assets/vinyl-dog-texture.jpg.b64 > "$RUNNER_TEMP/vinyl-dog-texture.jpg"
           blender --background --factory-startup --python-exit-code 1 \
             --python blender/build_phonecase.py -- \
             --input "iphone_17_pro_max (1).glb" \
             --output dist/iphone-17-pro-max-hero.glb \
             --qa-dir qa \
-            --report reports/build-report.json
+            --report reports/build-report.json \
+            --vinyl-texture "$RUNNER_TEMP/vinyl-dog-texture.jpg"
 
       - name: Install official glTF validator
         run: npm install --prefix "$RUNNER_TEMP/gltf-validator" gltf-validator
