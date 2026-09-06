@@ -2,11 +2,11 @@
   "uri": "iphone-17-pro-max-hero.glb",
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-06T14:53:31.268Z",
+  "validatedAt": "2026-09-06T15:34:38.395Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
-    "numInfos": 24,
+    "numInfos": 8,
     "numHints": 0,
     "messages": [
       {
@@ -20,12 +20,6 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/1/primitives/1/attributes/TEXCOORD_0"
       },
       {
         "code": "UNUSED_OBJECT",
@@ -49,24 +43,6 @@
         "code": "UNUSED_OBJECT",
         "message": "This object may be unused.",
         "severity": 2,
-        "pointer": "/meshes/2/primitives/3/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/2/primitives/4/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/2/primitives/5/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
         "pointer": "/meshes/3/primitives/0/attributes/TEXCOORD_0"
       },
       {
@@ -76,82 +52,10 @@
         "pointer": "/meshes/4/primitives/0/attributes/TEXCOORD_0"
       },
       {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
+        "code": "IMAGE_NPOT_DIMENSIONS",
+        "message": "Image has non-power-of-two dimensions: 940x1672.",
         "severity": 2,
-        "pointer": "/meshes/5/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/6/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/7/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/8/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/9/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/10/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/11/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/12/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/14/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/15/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/17/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/17/primitives/1/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/17/primitives/2/attributes/TEXCOORD_0"
+        "pointer": "/images/0"
       }
     ],
     "truncated": false
@@ -169,40 +73,29 @@
         "pointer": "/buffers/0",
         "mimeType": "application/gltf-buffer",
         "storage": "glb",
-        "byteLength": 1903524
+        "byteLength": 542840
       },
       {
         "pointer": "/images/0",
         "mimeType": "image/jpeg",
         "storage": "buffer-view",
         "image": {
-          "width": 512,
-          "height": 256,
-          "format": "rgb",
-          "bits": 8
-        }
-      },
-      {
-        "pointer": "/images/1",
-        "mimeType": "image/jpeg",
-        "storage": "buffer-view",
-        "image": {
-          "width": 512,
-          "height": 1024,
+          "width": 940,
+          "height": 1672,
           "format": "rgb",
           "bits": 8
         }
       }
     ],
     "animationCount": 0,
-    "materialCount": 15,
+    "materialCount": 3,
     "hasMorphTargets": false,
     "hasSkins": false,
     "hasTextures": true,
     "hasDefaultScene": true,
-    "drawCallCount": 26,
-    "totalVertexCount": 43546,
-    "totalTriangleCount": 35700,
+    "drawCallCount": 8,
+    "totalVertexCount": 3441,
+    "totalTriangleCount": 5343,
     "maxUVs": 1,
     "maxInfluences": 0,
     "maxAttributes": 3

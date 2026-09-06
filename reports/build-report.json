@@ -9,24 +9,30 @@
   },
   "required_nodes": {
     "PCE_Hero_Root": true,
-    "phone_body": true,
     "vinyl_back": true,
     "case_clear": true
   },
+  "phone_included": false,
+  "interior_empty": true,
   "vinyl": {
-    "thickness_m": 0.00032,
-    "uv0": true
+    "placement": "exterior_rear",
+    "texture": "vinyl-dog-texture.jpg",
+    "thickness_m": 0.00028,
+    "gap_from_shell_m": 6e-05,
+    "uv0": true,
+    "camera_opening": "single_rounded_rectangle"
   },
   "case": {
     "solid_back": true,
+    "hollow_interior": true,
     "front_lip": true,
     "button_covers": 3,
     "bottom_port_opening": true,
-    "camera_holes": 5
+    "camera_module_openings": 1
   },
-  "vertices": 35817,
-  "triangles": 35700,
+  "vertices": 2681,
+  "triangles": 5343,
   "triangle_budget": 50000,
   "triangle_budget_pass": true,
-  "output_bytes": 1931636
+  "output_bytes": 551392
 }
