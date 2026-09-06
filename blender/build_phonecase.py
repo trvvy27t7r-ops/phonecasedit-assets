@@ -384,9 +384,9 @@ def add_qa_scene(root, qa_coll):
 
     # Small, off-axis emitters reveal transparent edges without filling the
     # rear shell with a camera-facing white reflection.
-    area("QA_key", (-0.16, -0.20, 0.22), 12, 0.070, (1.0, 0.80, 0.65))
-    area("QA_rim", (0.18, 0.18, 0.18), 10, 0.050, (0.35, 0.58, 1.0))
-    area("QA_fill", (-0.18, 0.12, -0.02), 5, 0.060, (0.75, 0.88, 1.0))
+    area("QA_key", (-0.16, -0.20, 0.22), 12, 0.070, (1.0, 0.97, 0.94))
+    area("QA_rim", (0.18, 0.18, 0.18), 10, 0.050, (0.94, 0.97, 1.0))
+    area("QA_fill", (-0.18, 0.12, -0.02), 5, 0.060, (1.0, 1.0, 1.0))
 
     cam_data = bpy.data.cameras.new("QA_camera")
     cam = bpy.data.objects.new("QA_camera", cam_data)
@@ -473,8 +473,8 @@ def main():
         qa_bsdf = qa_material.node_tree.nodes.get("Principled BSDF")
         set_socket(qa_bsdf, ["Transmission Weight", "Transmission"], 0.0)
         set_socket(qa_bsdf, ["Alpha"], qa_alpha)
-        set_socket(qa_bsdf, ["Base Color"], (0.92, 0.96, 1.0, 1.0))
-        qa_material.diffuse_color = (0.92, 0.96, 1.0, qa_alpha)
+        set_socket(qa_bsdf, ["Base Color"], (1.0, 1.0, 1.0, 1.0))
+        qa_material.diffuse_color = (1.0, 1.0, 1.0, qa_alpha)
         if hasattr(qa_material, "blend_method"):
             qa_material.blend_method = "BLEND"
         if hasattr(qa_material, "surface_render_method"):
