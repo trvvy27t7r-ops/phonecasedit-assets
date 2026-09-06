@@ -2,11 +2,11 @@
   "uri": "iphone-17-pro-max-hero.glb",
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-06T14:40:45.624Z",
+  "validatedAt": "2026-09-06T14:45:35.217Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
-    "numInfos": 25,
+    "numInfos": 20,
     "numHints": 0,
     "messages": [
       {
@@ -20,12 +20,6 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/1/primitives/1/attributes/TEXCOORD_0"
       },
       {
         "code": "UNUSED_OBJECT",
@@ -50,18 +44,6 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/2/primitives/3/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/2/primitives/4/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/2/primitives/5/attributes/TEXCOORD_0"
       },
       {
         "code": "UNUSED_OBJECT",
@@ -146,18 +128,6 @@
         "message": "This object may be unused.",
         "severity": 2,
         "pointer": "/meshes/17/primitives/1/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/17/primitives/2/attributes/TEXCOORD_0"
-      },
-      {
-        "code": "UNUSED_OBJECT",
-        "message": "This object may be unused.",
-        "severity": 2,
-        "pointer": "/meshes/17/primitives/3/attributes/TEXCOORD_0"
       }
     ],
     "truncated": false
@@ -175,7 +145,7 @@
         "pointer": "/buffers/0",
         "mimeType": "application/gltf-buffer",
         "storage": "glb",
-        "byteLength": 1909340
+        "byteLength": 1871856
       },
       {
         "pointer": "/images/0",
@@ -206,9 +176,9 @@
     "hasSkins": false,
     "hasTextures": true,
     "hasDefaultScene": true,
-    "drawCallCount": 27,
-    "totalVertexCount": 43712,
-    "totalTriangleCount": 35784,
+    "drawCallCount": 22,
+    "totalVertexCount": 42672,
+    "totalTriangleCount": 35082,
     "maxUVs": 1,
     "maxInfluences": 0,
     "maxAttributes": 3
