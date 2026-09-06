@@ -24,9 +24,9 @@
     "bottom_port_opening": true,
     "camera_holes": 5
   },
-  "vertices": 36943,
-  "triangles": 37932,
+  "vertices": 35851,
+  "triangles": 35784,
   "triangle_budget": 50000,
   "triangle_budget_pass": true,
-  "output_bytes": 1988592
+  "output_bytes": 1938160
 }
