@@ -212,7 +212,7 @@ def import_and_normalise_phone(path, root, coll):
     return phone, imported_meshes
 
 
-def make_vinyl(root, coll, mat, shell_back_y):
+def make_vinyl(root, coll, print_mat, backing_mat, shell_back_y):
     # A real 0.28 mm printed slab applied on the OUTSIDE of the rear shell.
     thickness = 0.00028
     gap = 0.00006
@@ -220,7 +220,7 @@ def make_vinyl(root, coll, mat, shell_back_y):
     height = CASE_H - 0.0040
     vinyl = rounded_box(
         "vinyl_back", (width, thickness, height),
-        (0, shell_back_y + gap + thickness / 2, 0), 0.0030, mat, 6, coll
+        (0, shell_back_y + gap + thickness / 2, 0), 0.0030, print_mat, 6, coll
     )
     vinyl.parent = root
 
@@ -232,6 +232,14 @@ def make_vinyl(root, coll, mat, shell_back_y):
     cut = rounded_box("vinyl_camera_module_cut", (cw, 0.012, ch),
                       (cx, vinyl.location.y, cz), camera_opening["radius"], None, 8)
     boolean_difference(vinyl, cut)
+
+    # Print only on the outward (+Y) face. The inner face and cut edges use a
+    # neutral adhesive backing, matching a real applied vinyl and preventing
+    # the photograph from appearing backwards inside the empty case.
+    vinyl.data.materials.append(backing_mat)
+    for poly in vinyl.data.polygons:
+        poly.use_smooth = False
+        poly.material_index = 0 if poly.normal.y > 0.5 else 1
 
     # Deterministic planar UV0. Flip U so a rear camera displays the supplied
     # artwork with its original left/right orientation.
@@ -382,6 +390,7 @@ def main():
     clear = material("PCE_Clear_TPU", (0.92, 0.97, 1.0, 1), roughness=0.075, transmission=0.96, alpha=0.30)
     edge = material("PCE_Clear_Button", (0.80, 0.91, 1.0, 1), roughness=0.12, transmission=0.82, alpha=0.42)
     vinyl_mat = vinyl_material(Path(args.vinyl_texture))
+    vinyl_backing = material("PCE_Vinyl_Adhesive_Back", (0.94, 0.94, 0.91, 1), roughness=0.48)
 
     phone, phone_meshes = import_and_normalise_phone(Path(args.input), root, asset_coll)
     # The source phone is a dimensional template only. Remove it from the scene
@@ -394,7 +403,7 @@ def main():
     case, case_parts = make_case(root, asset_coll, clear, edge, camera_opening)
     shell_back_y = 0.0003 + 0.0114 / 2
     vinyl, camera_opening, vinyl_thickness, vinyl_gap = make_vinyl(
-        root, asset_coll, vinyl_mat, shell_back_y
+        root, asset_coll, vinyl_mat, vinyl_backing, shell_back_y
     )
     bpy.context.view_layer.update()
 
