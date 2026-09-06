@@ -131,6 +131,44 @@ def rounded_box(name, size, location, radius, mat=None, segments=4, coll=None):
     return obj
 
 
+def rounded_rect_prism(name, width, depth, height, location, radius,
+                       mat=None, segments=10, coll=None):
+    """Rounded X/Z outline extruded along Y without depth-clamped corners."""
+    half_w, half_h = width / 2, height / 2
+    radius = min(radius, half_w, half_h)
+    centres = (
+        (half_w - radius, half_h - radius, 0.0),
+        (-half_w + radius, half_h - radius, math.pi / 2),
+        (-half_w + radius, -half_h + radius, math.pi),
+        (half_w - radius, -half_h + radius, 3 * math.pi / 2),
+    )
+    outline = []
+    for cx, cz, start in centres:
+        for step in range(segments):
+            angle = start + step * (math.pi / 2) / segments
+            outline.append((cx + radius * math.cos(angle),
+                            cz + radius * math.sin(angle)))
+
+    n = len(outline)
+    verts = [(x, -depth / 2, z) for x, z in outline]
+    verts += [(x, depth / 2, z) for x, z in outline]
+    faces = [tuple(range(n)), tuple(reversed(range(n, 2 * n)))]
+    for i in range(n):
+        nxt = (i + 1) % n
+        faces.append((i, nxt, nxt + n, i + n))
+
+    mesh = bpy.data.meshes.new(name + "_mesh")
+    mesh.from_pydata(verts, [], faces)
+    mesh.validate(verbose=False)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    obj.location = location
+    (coll or bpy.context.scene.collection).objects.link(obj)
+    if mat:
+        obj.data.materials.append(mat)
+    return obj
+
+
 def cylinder(name, radius, depth, location, mat=None, vertices=32, coll=None):
     # Default cylinder axis is Z; rotate it so it pierces the phone along Y.
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth,
@@ -216,21 +254,23 @@ def make_vinyl(root, coll, print_mat, backing_mat, shell_back_y):
     # A real 0.28 mm printed slab applied on the OUTSIDE of the rear shell.
     thickness = 0.00028
     gap = 0.00006
-    width = CASE_W - 0.0042
-    height = CASE_H - 0.0040
-    vinyl = rounded_box(
-        "vinyl_back", (width, thickness, height),
-        (0, shell_back_y + gap + thickness / 2, 0), 0.0030, print_mat, 6, coll
+    width = BODY_W - 0.0012
+    height = BODY_H - 0.0012
+    vinyl = rounded_rect_prism(
+        "vinyl_back", width, thickness, height,
+        (0, shell_back_y + gap + thickness / 2, 0), 0.0095,
+        print_mat, 12, coll
     )
     vinyl.parent = root
 
     # Match the supplied physical product: one rounded rectangular opening
     # for the complete camera module, not artificial individual lens holes.
-    camera_opening = {"centre": (0.0130, 0.0540), "size": (0.0490, 0.0580), "radius": 0.0065}
+    camera_opening = {"centre": (0.0, 0.0580), "size": (0.0720, 0.0420), "radius": 0.0070}
     cx, cz = camera_opening["centre"]
     cw, ch = camera_opening["size"]
-    cut = rounded_box("vinyl_camera_module_cut", (cw, 0.012, ch),
-                      (cx, vinyl.location.y, cz), camera_opening["radius"], None, 8)
+    cut = rounded_rect_prism("vinyl_camera_module_cut", cw, 0.012, ch,
+                             (cx, vinyl.location.y, cz), camera_opening["radius"],
+                             None, 12)
     boolean_difference(vinyl, cut)
 
     # Print only on the outward (+Y) face. The inner face and cut edges use a
@@ -258,28 +298,30 @@ def make_case(root, coll, clear_mat, accent_mat, camera_opening):
     parts = []
     rail = 0.00165
     back_thickness = 0.00125
-    shell_depth = 0.0114
-    shell_y = 0.0003
+    shell_depth = 0.0124
+    shell_y = 0.0
     shell_back_y = shell_y + shell_depth / 2
 
     # One continuous rounded shell. Subtracting an open-front inner cavity
     # leaves a physical rear slab, joined side walls and a continuous lip.
-    shell = rounded_box("case_clear_shell", (CASE_W, shell_depth, CASE_H),
-                        (0, shell_y, 0), 0.0053, clear_mat, 8, coll)
+    shell = rounded_rect_prism("case_clear_shell", CASE_W, shell_depth, CASE_H,
+                               (0, shell_y, 0), 0.0120, clear_mat, 14, coll)
     cavity_depth = shell_depth - back_thickness + 0.0020
     cavity_max_y = shell_back_y - back_thickness
     cavity_min_y = cavity_max_y - cavity_depth
-    cavity = rounded_box("case_inner_cavity", (CASE_W - 2 * rail, cavity_depth, CASE_H - 2 * rail),
-                         (0, (cavity_min_y + cavity_max_y) / 2, 0),
-                         0.0041, None, 8)
+    cavity = rounded_rect_prism("case_inner_cavity", CASE_W - 2 * rail, cavity_depth,
+                                CASE_H - 2 * rail,
+                                (0, (cavity_min_y + cavity_max_y) / 2, 0),
+                                0.0102, None, 14)
     boolean_difference(shell, cavity)
 
     # One rounded opening for the complete camera module, matching the real
     # printed vinyl supplied by the user.
     cx, cz = camera_opening["centre"]
     cw, ch = camera_opening["size"]
-    cut = rounded_box("case_camera_module_cut", (cw + 0.0012, 0.028, ch + 0.0012),
-                      (cx, shell_back_y, cz), camera_opening["radius"] + 0.0006, None, 8)
+    cut = rounded_rect_prism("case_camera_module_cut", cw + 0.0012, 0.028,
+                             ch + 0.0012, (cx, shell_back_y, cz),
+                             camera_opening["radius"] + 0.0006, None, 12)
     boolean_difference(shell, cut)
 
     # USB-C/speaker opening through the lower wall.
@@ -299,12 +341,14 @@ def make_case(root, coll, clear_mat, accent_mat, camera_opening):
     ]
 
     # Raised clear protector as a physical frame around the module opening.
-    bumper = rounded_box("case_camera_guard", (cw + 0.0048, 0.0020, ch + 0.0048),
-                          (cx, shell_back_y + 0.00075, cz),
-                          camera_opening["radius"] + 0.0024, clear_mat, 8, coll)
-    guard_cut = rounded_box("case_camera_guard_inner_cut", (cw + 0.0008, 0.010, ch + 0.0008),
-                            (cx, bumper.location.y, cz),
-                            camera_opening["radius"] + 0.0004, None, 8)
+    bumper = rounded_rect_prism("case_camera_guard", cw + 0.0048, 0.0020,
+                                ch + 0.0048, (cx, shell_back_y + 0.00075, cz),
+                                camera_opening["radius"] + 0.0024,
+                                clear_mat, 12, coll)
+    guard_cut = rounded_rect_prism("case_camera_guard_inner_cut", cw + 0.0008,
+                                   0.010, ch + 0.0008,
+                                   (cx, bumper.location.y, cz),
+                                   camera_opening["radius"] + 0.0004, None, 12)
     boolean_difference(bumper, guard_cut)
     parts.append(bumper)
 
@@ -387,8 +431,8 @@ def main():
     root = bpy.data.objects.new("PCE_Hero_Root", None)
     asset_coll.objects.link(root)
 
-    clear = material("PCE_Clear_TPU", (0.92, 0.97, 1.0, 1), roughness=0.075, transmission=0.96, alpha=0.30)
-    edge = material("PCE_Clear_Button", (0.80, 0.91, 1.0, 1), roughness=0.12, transmission=0.82, alpha=0.42)
+    clear = material("PCE_Clear_TPU", (1.0, 1.0, 1.0, 1), roughness=0.075, transmission=0.97, alpha=0.18)
+    edge = material("PCE_Clear_Button", (1.0, 1.0, 1.0, 1), roughness=0.11, transmission=0.90, alpha=0.24)
     vinyl_mat = vinyl_material(Path(args.vinyl_texture))
     vinyl_backing = material("PCE_Vinyl_Adhesive_Back", (0.94, 0.94, 0.91, 1), roughness=0.48)
 
@@ -399,9 +443,11 @@ def main():
     for obj in reversed(template_objects):
         if obj.name in bpy.data.objects:
             bpy.data.objects.remove(obj, do_unlink=True)
-    camera_opening = {"centre": (0.0130, 0.0540), "size": (0.0490, 0.0580), "radius": 0.0065}
+    # The original GLB camera plateau measures approximately 70 x 40 mm after
+    # normalisation. Add 1 mm clearance around it for a production case.
+    camera_opening = {"centre": (0.0, 0.0580), "size": (0.0720, 0.0420), "radius": 0.0070}
     case, case_parts = make_case(root, asset_coll, clear, edge, camera_opening)
-    shell_back_y = 0.0003 + 0.0114 / 2
+    shell_back_y = 0.0124 / 2
     vinyl, camera_opening, vinyl_thickness, vinyl_gap = make_vinyl(
         root, asset_coll, vinyl_mat, vinyl_backing, shell_back_y
     )
@@ -423,12 +469,12 @@ def main():
     # on a headless software renderer. The GLB above already contains physical
     # KHR_materials_transmission; QA renders switch only the in-memory preview
     # to alpha so placement and cut-outs remain visually inspectable.
-    for qa_material, qa_alpha in ((clear, 0.075), (edge, 0.14)):
+    for qa_material, qa_alpha in ((clear, 0.10), (edge, 0.16)):
         qa_bsdf = qa_material.node_tree.nodes.get("Principled BSDF")
         set_socket(qa_bsdf, ["Transmission Weight", "Transmission"], 0.0)
         set_socket(qa_bsdf, ["Alpha"], qa_alpha)
-        set_socket(qa_bsdf, ["Base Color"], (0.18, 0.38, 0.58, 1.0))
-        qa_material.diffuse_color = (0.18, 0.38, 0.58, qa_alpha)
+        set_socket(qa_bsdf, ["Base Color"], (0.92, 0.96, 1.0, 1.0))
+        qa_material.diffuse_color = (0.92, 0.96, 1.0, qa_alpha)
         if hasattr(qa_material, "blend_method"):
             qa_material.blend_method = "BLEND"
         if hasattr(qa_material, "surface_render_method"):
@@ -473,7 +519,10 @@ def main():
         "generator": "PhoneCaseEdit scripted Blender pipeline",
         "source": Path(args.input).name,
         "output": out.name,
-        "dimensions_m": {"phone_width": BODY_W, "phone_height": BODY_H, "phone_depth": BODY_D},
+        "dimensions_m": {
+            "phone_width": BODY_W, "phone_height": BODY_H, "phone_depth": BODY_D,
+            "case_width": CASE_W, "case_height": CASE_H, "case_depth": 0.0124,
+        },
         "required_nodes": {"PCE_Hero_Root": True, "vinyl_back": True, "case_clear": True},
         "phone_included": False,
         "interior_empty": True,
@@ -483,7 +532,13 @@ def main():
             "thickness_m": vinyl_thickness,
             "gap_from_shell_m": vinyl_gap,
             "uv0": bool(vinyl.data.uv_layers),
-            "camera_opening": "single_rounded_rectangle",
+            "outer_corner_radius_m": 0.0095,
+            "camera_opening": {
+                "shape": "iphone_17_pro_max_horizontal_plateau",
+                "width_m": camera_opening["size"][0],
+                "height_m": camera_opening["size"][1],
+                "corner_radius_m": camera_opening["radius"],
+            },
         },
         "case": {"solid_back": True, "hollow_interior": True, "front_lip": True,
                  "button_covers": 3, "bottom_port_opening": True,
