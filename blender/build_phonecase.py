@@ -204,9 +204,9 @@ def make_vinyl(root, coll, mat):
     # Three camera lenses plus flash and LiDAR; approximate centres match the
     # inspected source and can be tuned from QA renders without hand modelling.
     holes = [
-        (0.0265, 0.0660, 0.0089),
-        (0.0080, 0.0520, 0.0089),
-        (0.0260, 0.0440, 0.0089),
+        (0.0228, 0.0692, 0.0089),
+        (0.0043, 0.0588, 0.0089),
+        (0.0240, 0.0516, 0.0089),
         (-0.0065, 0.0580, 0.0034),
         (-0.0040, 0.0380, 0.0028),
     ]
@@ -268,7 +268,7 @@ def make_case(root, coll, clear_mat, accent_mat, holes):
 
     # Raised camera protector around the complete camera field.
     bumper = rounded_box("case_camera_guard", (0.0435, 0.0020, 0.0505),
-                          (-0.0145, shell_back_y + 0.00075, 0.048), 0.0060, clear_mat, 8, coll)
+                          (0.0130, shell_back_y + 0.00075, 0.054), 0.0060, clear_mat, 8, coll)
     for x, z, r in holes:
         cut = cylinder("guard_cut", r + 0.00115, 0.02, (x, bumper.location.y, z), vertices=32)
         boolean_difference(bumper, cut)
